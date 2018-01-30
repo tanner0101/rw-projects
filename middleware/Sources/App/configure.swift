@@ -14,8 +14,19 @@ public func configure(
 
     // register routes to the router
     let router = EngineRouter.default()
-    try routes(router)
+    try routes(router, env)
     services.register(router, as: Router.self)
+
+    // register custom service types
+    services.register(SecretMiddleware.self)
+    services.register(RateCounter.self)
+
+    // configure middleware
+    var middleware = MiddlewareConfig()
+    middleware.use(LogMiddleware())
+    middleware.use(ErrorMiddleware.self)
+    middleware.use(DateMiddleware.self)
+    services.register(middleware)
 
     // configure sqlite db
     var databases = DatabaseConfig()

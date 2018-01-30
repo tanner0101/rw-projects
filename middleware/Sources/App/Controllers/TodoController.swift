@@ -15,16 +15,6 @@ final class TodoController {
         }
     }
 
-    /// Updates an existing Todo item.
-    func update(_ req: Request) throws -> Future<Todo> {
-        let todo = try req.parameter(Todo.self)
-        let title = req.content.get(String.self, at: "title")
-        return flatMap(to: Todo.self, todo, title) { todo, title in
-            todo.title = title
-            return todo.save(on: req)
-        }
-    }
-
     /// Deletes an existing Todo item.
     func delete(_ req: Request) throws -> Future<HTTPStatus> {
         return try req.parameter(Todo.self).flatMap(to: HTTPStatus.self) { todo in
