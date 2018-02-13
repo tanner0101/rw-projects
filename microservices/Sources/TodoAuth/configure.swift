@@ -1,4 +1,5 @@
 import FluentSQLite
+import Foundation
 import Todo
 import Vapor
 
@@ -33,7 +34,8 @@ public func configure(
     services.register(migrations)
 
     // Configure JWT signer
-    services.register(Identity.signer())
+    let unsafeKey = Data(repeating: 0, count: 32)
+    services.register(Identity.signer(key: unsafeKey))
 
     // Configure the rest of your application here
 }

@@ -3,7 +3,8 @@ import Foundation
 import Todo
 import Vapor
 
-/// A single entry of a Todo list.
+/// Represents a Todo user + the private information known
+/// only by the Auth microservice (such as hashed password).
 public final class PrivateUser: Content {
     /// The unique identifier for this `Todo`.
     public var id: UUID?
@@ -25,7 +26,7 @@ public final class PrivateUser: Content {
         self.hashedPassword = hashedPassword
     }
 
-    /// Creates a public version of this user.
+    /// Creates a public version of this user. (Without the hashed password)
     public var `public`: User {
         return .init(id: id, name: name, email: email)
     }
@@ -33,6 +34,9 @@ public final class PrivateUser: Content {
 
 /// A single user.
 extension PrivateUser: SQLiteModel {
+    /// See `SQLiteModel.name`
+    public static var name: String { return "user" }
+
     /// See `Model.idKey`
     public static var idKey: ReferenceWritableKeyPath<PrivateUser, UUID?> { return \.id }
 }

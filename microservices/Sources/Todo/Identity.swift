@@ -2,6 +2,7 @@ import Foundation
 import JWT
 import Vapor
 
+/// Identifying information.
 public struct Identity: JWTPayload {
     /// Holds the owner's ID.
     public var id: UUID
@@ -23,6 +24,8 @@ public struct Identity: JWTPayload {
 /// JWT with Identity payload
 public typealias IdentityToken = JWT<Identity>
 
+/// MARK: Convenience
+
 extension Identity {
     /// Creates an `Identity` containing JWT for this `User`.
     /// Returns `nil` if the `User` does not have an identifier.
@@ -33,8 +36,8 @@ extension Identity {
     }
 
     /// Creates a JWT signer.
-    public static func signer() -> JWTSigner {
-        return .hs256(key: Data())
+    public static func signer(key: Data) -> JWTSigner {
+        return .hs256(key: key)
     }
 
     /// Signs the supplied token by creating a JWT signer from the container.
@@ -49,6 +52,8 @@ extension Identity {
         return try IdentityToken(from: data, verifiedUsing: signer)
     }
 }
+
+/// MARK: Request
 
 extension Request {
     /// Parses an `Identity` from the `Request` or throws an error.
@@ -65,6 +70,8 @@ extension Request {
         return jwt.payload
     }
 }
+
+/// MARK: Service
 
 /// Allows JWT signers to be used as a service.
 extension JWTSigner: Service { }

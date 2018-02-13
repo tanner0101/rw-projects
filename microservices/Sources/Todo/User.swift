@@ -1,9 +1,9 @@
 import Foundation
 import Vapor
 
-/// A single entry of a Todo list.
+/// A registered user.
 public final class User: Content {
-    /// The unique identifier for this `Todo`.
+    /// The unique identifier for this `User`.
     public var id: UUID?
 
     /// This user's preferred name.

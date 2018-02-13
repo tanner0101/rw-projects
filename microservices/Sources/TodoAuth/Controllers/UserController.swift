@@ -32,17 +32,17 @@ final class UserController {
     }
 
     /// Logs a user in.
-    func login(_ req: Request) throws -> Future<UserIdentityToken> {
+    func login(_ req: Request) throws -> Future<[String: String]> {
         /// Use same unauthorized error for email not found
         /// AND password didn't match to prevent information leakage.
         let unauthorized = Abort(.unauthorized, reason: "Invalid credentials.")
 
         /// Decode user credentials from request.
-        return try req.content.decode(UserCredentials.self).flatMap(to: UserIdentityToken.self) { creds in
+        return try req.content.decode(UserCredentials.self).flatMap(to: [String: String].self) { creds in
             /// Use email in user credentials to find the first matching user.
             return PrivateUser.query(on: req).filter(\.email == creds.email).first()
                 .unwrap(or: unauthorized)
-                .map(to: UserIdentityToken.self)
+                .map(to: [String: String].self)
             { user in
                 /// Use BCryptHasher to check if passwords match.
                 guard try req.make(BCryptHasher.self).verify(
@@ -59,23 +59,8 @@ final class UserController {
                 let token = try Identity.signJWT(&jwt, using: req)
 
                 /// Convert to identity token response.
-                return UserIdentityToken(token: token)
+                return ["token": token]
             }
         }
     }
-}
-
-
-struct UserCredentials: Content {
-    var email: String
-    var cleartextPassword: String
-
-    enum CodingKeys: String, CodingKey {
-        case email = "email"
-        case cleartextPassword = "password"
-    }
-}
-
-struct UserIdentityToken: Content {
-    var token: String
 }
