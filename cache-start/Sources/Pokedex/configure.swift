@@ -21,7 +21,7 @@ public func configure(
     services.register(PokeAPI.self)
 
     /// Setup a simple in-memory SQLite database
-    var databases = DatabasesConfig()
+    var databases = DatabaseConfig()
     let sqlite = try SQLiteDatabase(storage: .memory)
     databases.add(database: sqlite, as: .sqlite)
     services.register(databases)
@@ -35,6 +35,6 @@ public func configure(
     services.register(migrations)
 
     // Prefer Fluent-based cache
-    config.prefer(SQLiteCache.self, for: KeyedCache.self)
-    // config.prefer(MemoryKeyedCache.self, for: KeyedCache.self)
+    // config.prefer(SQLiteCache.self, for: KeyedCache.self)
+    config.prefer(MemoryKeyedCache.self, for: KeyedCache.self)
 }

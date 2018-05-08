@@ -13,7 +13,7 @@ extension PokeAPI {
     public static func makeTest(on container: Container) throws -> PokeAPI {
         return try PokeAPI(
             /// Use the container to make an HTTP client
-            client: container.make(Client.self),
+            client: container.make(Client.self, for: PokeAPI.self),
             /// Instead of using the container to create a cache, we will use
             /// a simple In-Memory cache to limit the scope of our test to HTTP.
             cache: MemoryKeyedCache()

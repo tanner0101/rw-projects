@@ -5,10 +5,10 @@ let package = Package(
     name: "Pokedex",
     dependencies: [
         // 💧 A server-side Swift web framework. 
-        .package(url: "https://github.com/vapor/vapor.git", from: "3.0.0"),
+        .package(url: "https://github.com/vapor/vapor.git", .branch("nio")),
 
         // 🖋 Swift ORM framework (queries, models, and relations) for building NoSQL and SQL database integrations.
-        .package(url: "https://github.com/vapor/fluent-sqlite.git", from: "3.0.0-rc" /* FIXME: move to non-RC */),
+        .package(url: "https://github.com/vapor/fluent-sqlite.git", .branch("nio")),
     ],
     targets: [
         .target(name: "Pokedex", dependencies: ["FluentSQLite", "Vapor"]),
@@ -16,3 +16,4 @@ let package = Package(
         .testTarget(name: "PokedexTests", dependencies: ["Pokedex"]),
     ]
 )
+
