@@ -2,8 +2,6 @@ import FluentSQLite
 import Vapor
 
 /// Called before your application initializes.
-///
-/// [Learn More →](https://docs.vapor.codes/3.0/getting-started/structure/#configureswift)
 public func configure(
     _ config: inout Config,
     _ env: inout Environment,
@@ -21,7 +19,7 @@ public func configure(
     services.register(PokeAPI.self)
 
     /// Setup a simple in-memory SQLite database
-    var databases = DatabaseConfig()
+    var databases = DatabasesConfig()
     let sqlite = try SQLiteDatabase(storage: .memory)
     databases.add(database: sqlite, as: .sqlite)
     services.register(databases)
@@ -30,11 +28,5 @@ public func configure(
     var migrations = MigrationConfig()
     /// Ensure there is a table ready to store the Pokemon
     migrations.add(model: Pokemon.self, database: .sqlite)
-    /// Ensure SQLiteCache has the tables it will need
-    migrations.prepareCache(for: .sqlite)
     services.register(migrations)
-
-    // Prefer Fluent-based cache
-    // config.prefer(SQLiteCache.self, for: KeyedCache.self)
-    config.prefer(MemoryKeyedCache.self, for: KeyedCache.self)
 }

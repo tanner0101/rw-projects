@@ -5,13 +5,9 @@ public final class PokeAPI {
     /// The HTTP client powering this API.
     let client: Client
 
-    /// Internal cache for optimizing HTTP client API usage.
-    let cache: KeyedCache
-
     /// Creates a new `PokeAPI` wrapper from the supplied client and cache.
-    public init(client: Client, cache: KeyedCache) {
+    public init(client: Client) {
         self.client = client
-        self.cache = cache
     }
 
     /// Returns `true` if the supplied Pokemon name is real.
@@ -19,28 +15,18 @@ public final class PokeAPI {
     /// - parameter client: Queries the "pokeapi.co" API to verify supplied names
     /// - parameter cache: Caches client results to minimize slow, external API calls
     public func verifyName(_ name: String, on worker: Worker) throws -> Future<Bool> {
-        /// create a consistent cache key
-        let key = name.lowercased()
-        return try cache.get(Bool.self, forKey: key).flatMap(to: Bool.self) { result in
-            if let exists = result {
-                /// The verification result has been cached, no need to continue!
-                /// Note: we must wrap the Bool in a Future here because we are inside of `flatMap`
-                /// and the API fetch that happens after this is async.
-                return Future.map(on: worker) { exists }
-            }
-            print("Cache miss: \(name): \(result)")
-
-            /// This Pokemon was not cached, we need to query the PokeAPI to verify.
-            return self.fetchPokemon(named: name).flatMap(to: Bool.self) { res in
-                switch res.http.status.code {
-                case 200..<300:
-                    /// The API returned 2xx which means this is a real Pokemon name
-                    return try self.cache.set(true, forKey: key).transform(to: true)
-                case 404:
-                    /// The API returned a 404 meaning this Pokemon name was not found.
-                    return try self.cache.set(false, forKey: key).transform(to: false)
-                default: throw Abort(.internalServerError, reason: "Unexpected PokeAPI response: \(res.http.status)")
-                }
+        /// Query the PokeAPI.
+        return self.fetchPokemon(named: name).map { res in
+            switch res.http.status.code {
+            case 200..<300:
+                /// The API returned 2xx which means this is a real Pokemon name
+                return true
+            case 404:
+                /// The API returned a 404 meaning this Pokemon name was not found.
+                return false
+            default:
+                /// The API returned a 500. Only thing we can do is forward the error.
+                throw Abort(.internalServerError, reason: "Unexpected PokeAPI response: \(res.http.status)")
             }
         }
     }
@@ -55,10 +41,7 @@ public final class PokeAPI {
 extension PokeAPI: ServiceType {
     /// See `ServiceType.makeService(for:)`
     public static func makeService(for container: Container) throws -> PokeAPI {
-        /// Use the container to create the Client and KeyedCache services our PokeAPI wrapper needs.
-        return try PokeAPI(
-            client: container.make(for: PokeAPI.self),
-            cache: container.make(for: PokeAPI.self)
-        )
+        /// Use the container to create the Client services our PokeAPI wrapper needs.
+        return try PokeAPI(client: container.make())
     }
 }
